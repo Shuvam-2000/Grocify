@@ -88,9 +88,44 @@ export const userLogin = async (req, res) => {
         });
 
     } catch (error) {
+        console.error("Error", error.message)
         res.status(500).json({
         message: "Internal Server Error",
         success: false,
         });
     }
 };
+
+// get user info
+export const getUserInfo = async (req,res) => {
+    try {
+        // fetching userId from the middleware
+        const userId = req.user.userId;
+
+        if(!userId) return res.status(400).json({
+            message: 'User ID not Found',
+            success: false
+        })
+
+        // fetch the user
+        const user = await User.findById(userId).select("-password");
+
+        if(!user) return res.status(404).json({
+            message: 'User Not Avaliable',
+            success: false
+        })
+
+        res.status(200).json({
+            message: 'User Found',
+            success: true,
+            user: user
+        })
+        
+    } catch (error) {
+        console.error("Error", error.message)
+        res.status(500).json({
+        message: "Internal Server Error",
+        success: false,
+        })
+    }
+}
