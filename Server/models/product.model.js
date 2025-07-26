@@ -26,14 +26,19 @@ const productSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    inStock:{
-        type: Boolean,
-        default: true
-    }
+    seller: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "seller",
+      required: true,
+    },
+    inStock: {
+      type: Boolean,
+      default: true,
+    },
   },
-  { timeStamps: true }
+  { timestamps: true }
 );
 
-const User = mongoose.model("product", productSchema);
+const Product = mongoose.model("product", productSchema);
 
-export default User;
+export default Product;

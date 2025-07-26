@@ -3,7 +3,7 @@ import { configDotenv } from 'dotenv';
 
 configDotenv();
 
-export const isUserAuthenticated = async (req, res, next) => {
+export const isSellerAuthenticated = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
