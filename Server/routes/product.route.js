@@ -2,6 +2,7 @@ import express from "express";
 import {
   addNewProduct,
   changeProductInStock,
+  deleteProduct,
   fetchProductList,
 } from "../controllers/product.controller.js";
 import { isSellerAuthenticated } from "../middlewares/seller.middleware.js";
@@ -22,5 +23,8 @@ router.get("/get-product/:id", isUserAuthenticated, fetchProductList);
 
 // route for updating the instock status for a product
 router.patch("/update", isSellerAuthenticated, changeProductInStock)
+
+// delete any product by the seller
+router.delete("/delete", isSellerAuthenticated, deleteProduct);
 
 export default router;

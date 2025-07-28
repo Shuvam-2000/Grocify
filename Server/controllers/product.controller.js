@@ -1,6 +1,8 @@
 import Product from "../models/product.model.js";
 import cloudinary from "../config/cloudinary.js"; 
 import Seller from "../models/seller.model.js";
+import User from "../models/user.model.js";
+import mongoose from 'mongoose';
 
 // add new product
 export const addNewProduct = async (req, res) => {
@@ -142,6 +144,70 @@ export const changeProductInStock = async (req, res) => {
     })
   } catch (error) {
     console.error("Error", error.message);
+    res.status(500).json({
+      message: "Internal Server Error",
+      success: false,
+    });
+  }
+};
+
+// delete any prodcut by the seller who created it
+export const deleteProduct = async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    // Validate product ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        message: "Invalid Product ID",
+        success: false,
+      });
+    }
+
+    const sellerId = req.user?.sellerId;
+
+    if (!sellerId) {
+      return res.status(400).json({
+        message: "Seller ID Not Found",
+        success: false,
+      });
+    }
+
+    // Check product exists
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({
+        message: "Product Not Found",
+        success: false,
+      });
+    }
+
+    // Check ownership
+    if (product.seller.toString() !== sellerId) {
+      return res.status(403).json({
+        message: "Unauthorized: You can't delete this product",
+        success: false,
+      });
+    }
+
+    // Delete product
+    await Product.findByIdAndDelete(id);
+
+    const objectId = new mongoose.Types.ObjectId(id);
+
+    // Remove product from user carts and seller's product list in parallel
+    await Promise.all([
+      User.updateMany({}, { $pull: { cartItems: { product: objectId } } }),
+      Seller.findByIdAndUpdate(sellerId, { $pull: { products: objectId } })
+    ]);
+
+    res.status(200).json({
+      message: "Product Deleted Successfully",
+      success: true,
+    });
+
+  } catch (error) {
+    console.error("Error:", error.message);
     res.status(500).json({
       message: "Internal Server Error",
       success: false,
