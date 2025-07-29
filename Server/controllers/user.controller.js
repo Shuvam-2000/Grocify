@@ -169,9 +169,9 @@ export const addToCart = async (req, res) => {
       if (itemExisitInCart.quantity > 10) {
         itemExisitInCart.quantity = 10;
         res.status(400).json({
-            message: "Maxium quantity reached for this item",
-            success: false
-        })
+          message: "Maxium quantity reached for this item",
+          success: false,
+        });
       }
     } else {
       user.cartItems.push({
@@ -197,29 +197,99 @@ export const addToCart = async (req, res) => {
 };
 
 // get items in cart
-export const getItemsInCart = async (req,res) => {
+export const getItemsInCart = async (req, res) => {
   try {
     const userId = req.user?.userId;
 
-    if(!userId) return res.status(400).json({
-      message: 'User Id not Found',
-      success: false
-    })
+    if (!userId) {
+      return res.status(400).json({
+        message: "User ID not found",
+        success: false,
+      });
+    }
 
-    // fetch cart data 
+    // Fetch user and populate cart items
     const user = await User.findById(userId).populate("cartItems.product");
 
-    if(!user) return res.status(404).json({
-      message: 'User Not Found',
-      success: false
-    })
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+        success: false,
+      });
+    }
+
+    // Calculate total price from cart items
+    const totalPrice = user.cartItems.reduce((acc, item) => {
+      const product = item.product;
+      const quantity = item.quantity || 1;
+
+      if (product && product.offerPrice) {
+        return acc + product.offerPrice * quantity;
+      }
+      return acc;
+    }, 0);
 
     res.status(200).json({
-      message: 'Cart Items Fetched SuccessFully',
+      message: "Cart items fetched successfully",
       success: true,
-      cartItems: user.cartItems
-    })
-    
+      cartItems: user.cartItems,
+      totalPrice,
+    });
+  } catch (error) {
+    console.error("Error:", error.message);
+    res.status(500).json({
+      message: "Internal Server Error",
+      success: false,
+    });
+  }
+};
+
+// increase quantity of any item in cart
+export const increaseItemQuantity = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    const { productId } = req.body;
+
+    // check if userId and productId present
+    if (!userId || !productId)
+      return res.status(400).json({
+        message: "User ID and Product ID are required",
+        success: false,
+      });
+
+    // fetch user from the userId
+    const user = await User.findById(userId);
+
+    // fetch the products info in the cart with the productId
+    const cartItem = user.cartItems.find(
+      (item) => item.product.toString() === productId
+    );
+
+    if (!cartItem) {
+      return res.status(404).json({
+        message: "Product not found in cart",
+        success: false,
+      });
+    }
+
+    // check cart item quanitity is less than 10
+    if (cartItem.quantity >= 10) {
+      return res.status(400).json({
+        message: "Maximum quantity reached",
+        success: false,
+      });
+    }
+
+    // increment the quantity of a item in cart
+    cartItem.quantity += 1;
+
+    await user.save();
+
+    res.status(200).json({
+      message: "Product Quantity increased",
+      success: true,
+      cartItems: user.cartItems,
+    });
   } catch (error) {
     console.error("Error", error.message);
     res.status(500).json({
@@ -227,26 +297,81 @@ export const getItemsInCart = async (req,res) => {
       success: false,
     });
   }
-}
+};
+
+// decrease quantity of any product in cart
+export const decreaseItemQuantity = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    const { productId } = req.body;
+
+    // check if productId and userId present
+    if (!userId || !productId) {
+      return res.status(400).json({
+        message: "User ID and Product ID are required",
+        success: false,
+      });
+    }
+
+    // fetch user with the userId
+    const user = await User.findById(userId);
+
+    // fetch the index of the item in the cart with the product ID
+    const cartItemIndex = user.cartItems.findIndex(
+      (item) => item.product.toString() === productId
+    );
+
+    // check if item is present in the cart
+    if (cartItemIndex === -1) {
+      return res.status(404).json({
+        message: "Product not found in cart",
+        success: false,
+      });
+    }
+
+    if (user.cartItems[cartItemIndex].quantity <= 1) {
+      // Remove item if quantity reaches 0 or 1
+      user.cartItems.splice(cartItemIndex, 1);
+    } else {
+      user.cartItems[cartItemIndex].quantity -= 1;
+    }
+
+    // update the database
+    await user.save();
+
+    res.status(200).json({
+      message: "Product Quantity updated",
+      success: true,
+      cartItems: user.cartItems,
+    });
+  } catch (error) {
+    console.error("Error", error.message);
+    res.status(500).json({
+      message: "Internal Server Error",
+      success: false,
+    });
+  }
+};
 
 // delete all items in cart
-export const deleteCartItems = async (req,res) => {
+export const deleteCartItems = async (req, res) => {
   try {
     const userId = req.user?.userId;
 
     // check if userId present
-    if(!userId) return res.status(404).json({
-      message: 'User Id not Found',
-      success: false
-    })
+    if (!userId)
+      return res.status(404).json({
+        message: "User Id not Found",
+        success: false,
+      });
 
     // delete all the items in cart
     await User.findByIdAndUpdate(userId, { cartItems: [] });
 
     res.status(200).json({
       message: "Cart Items Deleted SuccessFully",
-      success: true
-    })
+      success: true,
+    });
   } catch (error) {
     console.error("Error", error.message);
     res.status(500).json({
@@ -254,4 +379,4 @@ export const deleteCartItems = async (req,res) => {
       success: false,
     });
   }
-}
+};

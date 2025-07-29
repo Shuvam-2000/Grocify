@@ -1,9 +1,11 @@
 import express from "express";
 import {
   addToCart,
+  decreaseItemQuantity,
   deleteCartItems,
   getItemsInCart,
   getUserInfo,
+  increaseItemQuantity,
   newUserRegister,
   userLogin,
 } from "../controllers/user.controller.js";
@@ -27,7 +29,13 @@ router.post("/add", isUserAuthenticated, addToCart);
 // route for fetching the items in cart
 router.get("/get-cart", isUserAuthenticated, getItemsInCart)
 
-// route for deletign all the items in the cart
+// route for deleting all the items in the cart
 router.delete("/delete-cart", isUserAuthenticated, deleteCartItems);
+
+// route for increasing quantity of item in cart
+router.patch("/increase", isUserAuthenticated, increaseItemQuantity);
+
+// route for decreasing quantity of item in cart
+router.patch("/decrease", isUserAuthenticated, decreaseItemQuantity);
 
 export default router;
