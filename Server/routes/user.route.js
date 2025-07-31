@@ -1,13 +1,16 @@
 import express from "express";
 import {
   addToCart,
+  createOrder,
   decreaseItemQuantity,
   deleteCartItems,
   getItemsInCart,
   getUserInfo,
   increaseItemQuantity,
   newUserRegister,
+  placeOrder,
   userLogin,
+  verifyPayment,
 } from "../controllers/user.controller.js";
 import { isUserAuthenticated } from "../middlewares/user.middlware.js";
 
@@ -37,5 +40,14 @@ router.patch("/increase", isUserAuthenticated, increaseItemQuantity);
 
 // route for decreasing quantity of item in cart
 router.patch("/decrease", isUserAuthenticated, decreaseItemQuantity);
+
+// route for placing order 
+router.post('/place-order', isUserAuthenticated, placeOrder);
+
+// route for verifying the payment
+router.post('/verify-payment', isUserAuthenticated, verifyPayment);
+
+// route for saving the order to the database
+router.post('/create-order', isUserAuthenticated, createOrder);
 
 export default router;

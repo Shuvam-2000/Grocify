@@ -1,8 +1,11 @@
 import User from "../models/user.model.js";
 import Product from "../models/product.model.js";
+import Order from "../models/order.model.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { configDotenv } from "dotenv";
+import { instance } from "../config/payment.js";
+import crypto from 'crypto';
 
 // load environment variables
 configDotenv();
@@ -378,5 +381,140 @@ export const deleteCartItems = async (req, res) => {
       message: "Internal Server Error",
       success: false,
     });
+  }
+};
+
+// placeorder with the items in cart
+export const placeOrder = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    const user = await User.findById(userId).populate('cartItems.product');
+
+    if (!user || user.cartItems.length === 0) {
+      return res.status(400).json({ message: "Cart is empty or user not found" });
+    }
+
+    const totalPrice = user.cartItems.reduce((acc, item) => {
+      return acc + item.product.offerPrice * item.quantity;
+    }, 0);
+
+    if (totalPrice <= 0) {
+      return res.status(400).json({ message: "Invalid total amount" });
+    }
+
+    const razorpayOrder = await instance.orders.create({
+      amount: totalPrice * 100,
+      currency: 'INR',
+      receipt: `receipt_order_${Date.now()}`
+    });
+
+    return res.status(200).json({
+      success: true,
+      razorpayOrderId: razorpayOrder.id,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+    });
+
+  } catch (error) {
+    console.error("Place Order Error:", error.message);
+    return res.status(500).json({ message: "Internal Server Error", success: false });
+  }
+};
+
+export const verifyPayment = async (req, res) => {
+  try {
+    const { razorpayOrderId, razorpayPaymentId, razorpaySignature } = req.body;
+
+    if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature) {
+      return res.status(400).json({ message: "Missing payment fields" });
+    }
+
+    const body = razorpayOrderId + '|' + razorpayPaymentId;
+    const expectedSignature = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(body.toString())
+      .digest('hex');
+
+    if (expectedSignature !== razorpaySignature) {
+      return res.status(400).json({ success: false, message: 'Payment verification failed' });
+    }
+
+    return res.status(200).json({ success: true, message: 'Payment verified successfully' });
+
+  } catch (error) {
+    console.error("Verify Payment Error:", error.message);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const createOrder = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    const { razorpayOrderId, razorpayPaymentId, razorpaySignature, deliveryAddress } = req.body;
+
+    if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature) {
+      return res.status(400).json({ message: "Missing Razorpay payment details" });
+    }
+
+    if (!deliveryAddress || Object.values(deliveryAddress).some(field => !field)) {
+      return res.status(400).json({ message: "Incomplete delivery address" });
+    }
+
+    const user = await User.findById(userId).populate('cartItems.product');
+
+    if (!user || user.cartItems.length === 0) {
+      return res.status(400).json({ message: "User not found or cart is empty" });
+    }
+
+    const orderItems = user.cartItems.map(item => ({
+      product: item.product._id,
+      quantity: item.quantity
+    }));
+
+    const totalPrice = user.cartItems.reduce((acc, item) => {
+      return acc + item.product.offerPrice * item.quantity;
+    }, 0);
+
+    const newOrder = new Order({
+      user: userId,
+      products: orderItems,
+      totalPrice,
+      deliveryAddress,
+      paymentStatus: 'paid',
+      razorpayOrderId,
+      razorpayPaymentId,
+      razorpaySignature
+    });
+
+    await newOrder.save();
+
+    // Clear user's cart
+    user.cartItems = [];
+    await user.save();
+
+    // Add order to respective sellers
+    for (const item of orderItems) {
+      const product = await Product.findById(item.product);
+      if (product?.seller) {
+        const seller = await Seller.findById(product.seller);
+        if (seller) {
+          seller.orders.push({
+            order: newOrder._id,
+            product: product._id,
+            quantity: item.quantity
+          });
+          await seller.save();
+        }
+      }
+    }
+
+    return res.status(201).json({
+      message: 'Order created successfully',
+      order: newOrder
+    });
+
+  } catch (error) {
+    console.error("Create Order Error:", error.message);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };
