@@ -1,10 +1,12 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import "./index.css";
 import Home from "./components/pages/customer/Home";
 import Allproducts from "./components/pages/customer/Allproducts";
 import CartPage from "./components/pages/customer/CartPage";
 import Navbar from "../src/components/pages/customer/Navbar";
 import { useLocation } from "react-router-dom";
+import "./index.css";
+import ProductDetail from "./components/pages/customer/ProductDetail";
+import Footer from "./components/pages/customer/Footer";
 
 function AppContent() {
   const location = useLocation();
@@ -17,7 +19,9 @@ function AppContent() {
         <Route index element={<Home />} />
         <Route path="/allproducts" element={<Allproducts />} />
         <Route path="/cart" element={<CartPage />} />
+        <Route path="/product/:id" element={<ProductDetail />} />
       </Routes>
+      {!isSellerPath && <Footer />}
     </div>
   );
 }
