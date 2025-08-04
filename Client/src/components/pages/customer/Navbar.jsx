@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
-import { ShoppingCart, Search, Menu, User } from "lucide-react";
+import { ShoppingCart, Menu, User } from "lucide-react";
 
 const Navbar = () => {
   const [menuVisible, setMenuVisible] = useState(false);
@@ -27,8 +27,6 @@ const Navbar = () => {
 
       {/* Right Section */}
       <div className="flex items-center gap-3 md:gap-6 relative">
-        <Search className="w-5 md:w-6 h-5 ml-2 md:ml-0 text-gray-600 cursor-pointer" />
-
         <NavLink to="/cart" className="relative">
           <ShoppingCart className="w-5 md:w-6 h-6 text-green-700" />
           <span className="absolute top-[-6px] right-[-8px] bg-red-600 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">

@@ -7,6 +7,7 @@ import { useLocation } from "react-router-dom";
 import "./index.css";
 import ProductDetail from "./components/pages/customer/ProductDetail";
 import Footer from "./components/pages/customer/Footer";
+import Login from "./components/pages/customer/Login";
 
 function AppContent() {
   const location = useLocation();
@@ -20,6 +21,7 @@ function AppContent() {
         <Route path="/allproducts" element={<Allproducts />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/login" element={<Login />} />
       </Routes>
       {!isSellerPath && <Footer />}
     </div>
