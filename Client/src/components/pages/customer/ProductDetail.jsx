@@ -14,7 +14,7 @@ const ProductDetail = () => {
 
   const handleProductDetail = async () => {
     try {
-      setLoading(true); // 👈 Start loading
+      setLoading(true);
       const token = localStorage.getItem("token");
       const res = await axios.get(`/api/product/get-product/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
