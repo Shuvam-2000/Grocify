@@ -1,17 +1,31 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useSelector } from "react-redux";
+import { logout } from "../../../store/userSlice";
+import { useDispatch } from "react-redux";
 import { ShoppingCart, Menu, User } from "lucide-react";
+import toast from "react-hot-toast";
 
 const Navbar = () => {
   const [menuVisible, setMenuVisible] = useState(false);
   const [profileDropdown, setProfileDropdown] = useState(false);
+  const user = useSelector((store) => store.user.user);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const isAuthenticated = false; 
-  const username = "Shuvam Saha"; 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    dispatch(logout());
+    toast.success("Logout SuccessFull");
+    navigate("/login");
+  };
   return (
     <div className="flex items-center justify-between py-4 px-4 sm:px-8 border-b border-gray-300 bg-white relative">
       {/* Logo */}
-      <h1 onClick={() => setMenuVisible(!menuVisible)} className="sm:text-3xl text-2xl font-extrabold text-green-700 cursor-pointer">
+      <h1
+        onClick={() => setMenuVisible(!menuVisible)}
+        className="sm:text-3xl text-2xl font-extrabold text-green-700 cursor-pointer"
+      >
         Grocify
       </h1>
 
@@ -35,7 +49,7 @@ const Navbar = () => {
         </NavLink>
 
         {/* 👤 Profile OR Login */}
-        {isAuthenticated ? (
+        {user ? (
           <div className="relative">
             <User
               className="w-5 md:w-6 h-6 text-green-700 cursor-pointer"
@@ -43,7 +57,7 @@ const Navbar = () => {
             />
             {profileDropdown && (
               <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-md py-2 z-50 text-sm text-gray-700">
-                <div className="px-4 py-2 font-semibold">Hi, {username}</div>
+                <div className="px-4 py-2 font-semibold">Hi, {user.name}</div>
                 <NavLink
                   to="/order"
                   className="block px-4 py-2 hover:bg-gray-100"
@@ -55,7 +69,7 @@ const Navbar = () => {
                   className="w-full text-left px-4 py-2 hover:bg-gray-100"
                   onClick={() => {
                     setProfileDropdown(false);
-                    // Add logout logic here
+                    handleLogout();
                   }}
                 >
                   Logout
@@ -122,7 +136,7 @@ const Navbar = () => {
             <span>Cart</span>
           </NavLink>
 
-          {!isAuthenticated && (
+          {!user && (
             <NavLink
               to="/login"
               onClick={() => setMenuVisible(false)}

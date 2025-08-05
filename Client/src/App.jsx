@@ -8,20 +8,41 @@ import "./index.css";
 import ProductDetail from "./components/pages/customer/ProductDetail";
 import Footer from "./components/pages/customer/Footer";
 import Login from "./components/pages/customer/Login";
+import SignUp from "./components/pages/customer/SignUp";
+import ProtectedRoute from "./components/pages/customer/ProtectedRoute";
+import { Toaster } from "react-hot-toast";
 
 function AppContent() {
   const location = useLocation();
   const isSellerPath = location.pathname.includes("seller");
 
   return (
-    <div className={isSellerPath ? "" : `px-4 sm:px-[5vw] md:px-[7vw] lg:px-[2vw]`}>
+    <div
+      className={isSellerPath ? "" : `px-4 sm:px-[5vw] md:px-[7vw] lg:px-[2vw]`}
+    >
+      <Toaster />
       {!isSellerPath && <Navbar />}
       <Routes>
         <Route index element={<Home />} />
         <Route path="/allproducts" element={<Allproducts />} />
-        <Route path="/cart" element={<CartPage />} />
-        <Route path="/product/:id" element={<ProductDetail />} />
+        <Route
+          path="/cart"
+          element={
+            <ProtectedRoute>
+              <CartPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/product/:id"
+          element={
+            <ProtectedRoute>
+              <ProductDetail />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
       </Routes>
       {!isSellerPath && <Footer />}
     </div>
