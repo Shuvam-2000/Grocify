@@ -1,9 +1,10 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { logout } from "../../../store/userSlice";
 import { useDispatch } from "react-redux";
 import { ShoppingCart, Menu, User } from "lucide-react";
+import { getUserInfo } from "../../../utils/getUserInfo";
 import toast from "react-hot-toast";
 
 const Navbar = () => {
@@ -12,6 +13,10 @@ const Navbar = () => {
   const user = useSelector((store) => store.user.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  useEffect(() => {
+   getUserInfo(dispatch);
+  },[])
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -44,7 +49,7 @@ const Navbar = () => {
         <NavLink to="/cart" className="relative">
           <ShoppingCart className="w-5 md:w-6 h-6 text-green-700" />
           <span className="absolute top-[-6px] right-[-8px] bg-red-600 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
-            0
+            {user?.cartItems?.reduce((total, item) => total + item.quantity, 0) || 0}
           </span>
         </NavLink>
 
@@ -130,7 +135,7 @@ const Navbar = () => {
             <div className="relative">
               <ShoppingCart className="w-5 h-5" />
               <span className="absolute top-[-6px] left-[-6px] bg-red-600 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
-                0
+                {user?.cartItems?.reduce((total, item) => total + item.quantity, 0) || 0}
               </span>
             </div>
             <span>Cart</span>

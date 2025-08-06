@@ -3,14 +3,16 @@ import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import axios from "../../../utils/axios";
+import { getUserInfo } from "../../../utils/getUserInfo";
 import { setSingleProduct } from "../../../store/productSlice";
+import { setCart } from "../../../store/cartSlice";
 
 const ProductDetail = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const { singleproduct } = useSelector((store) => store.product);
   const [mainImage, setMainImage] = useState("");
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
 
   const handleProductDetail = async () => {
     try {
@@ -34,12 +36,29 @@ const ProductDetail = () => {
         error.response?.data?.message || "Failed to fetch product details"
       );
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
-  const addToCart = async () => {
-    // add to cart API integration
+  const addToCart = async (productId, quantity) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await axios.post(
+        "/api/user/add",
+        { productId, quantity },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      await getUserInfo(dispatch);
+      dispatch(setCart(res.data?.cartItems));
+      toast.success(res.data?.message || "Item Added To Cart");
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Product Adding To Cart Failed"
+      );
+    }
   };
 
   useEffect(() => {
@@ -61,11 +80,14 @@ const ProductDetail = () => {
       <div className="flex flex-col md:flex-row gap-10">
         {/* Left: Image Section */}
         <div className="flex flex-col gap-4">
-          <img
-            src={mainImage}
-            alt="Product"
-            className="w-full max-w-md object-cover border rounded-xl"
-          />
+          {mainImage && (
+            <img
+              src={mainImage}
+              alt="Product"
+              className="w-full max-w-md object-cover border rounded-xl"
+            />
+          )}
+
           <div className="flex gap-2 flex-wrap">
             {singleproduct.image?.map((img, index) => (
               <img
@@ -101,13 +123,13 @@ const ProductDetail = () => {
 
           <div className="flex gap-4 mt-4">
             <button
-              onClick={addToCart}
+              onClick={() => addToCart(singleproduct._id, 1)}
               className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700"
             >
               Add to Cart
             </button>
             <button
-              onClick={addToCart}
+              onClick={() => addToCart(singleproduct._id, 1)}
               className="bg-orange-500 text-white px-6 py-2 rounded-md hover:bg-orange-600"
             >
               Buy Now
@@ -118,7 +140,9 @@ const ProductDetail = () => {
 
       {/* Recommended Products Section */}
       <div className="mt-20">
-        <h3 className="text-2xl font-semibold mb-4">Recommended Products by AI</h3>
+        <h3 className="text-2xl font-semibold mb-4">
+          Recommended Products by AI
+        </h3>
         <div className="text-gray-600 italic">
           Coming soon: Smart recommendations powered by AI...
         </div>

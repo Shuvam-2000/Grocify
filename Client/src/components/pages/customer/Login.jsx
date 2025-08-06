@@ -26,7 +26,6 @@ const Login = () => {
         dispatch(setUser(res.data?.user));
         toast.success(res.data?.message || "Login SuccessFull");
         navigate("/");
-        console.log()
         reset();
       }
     } catch (error) {
