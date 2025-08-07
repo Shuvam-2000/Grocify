@@ -2,6 +2,7 @@ import { Facebook, Instagram, Twitter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
+  const sellertoken = localStorage.getItem("sellertoken")
   return (
     <div className="text-[#414141] py-14 px-6 sm:px-20 border-t border-gray-300">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-10 sm:gap-20">
@@ -28,7 +29,7 @@ const Footer = () => {
           <Link to="/cart" className="text-sm hover:text-gray-700 text-gray-600 font-mono">
             My Cart
           </Link>
-          <Link to="/seller" className="text-sm hover:text-gray-700 text-gray-600 font-mono">
+          <Link to={sellertoken ? "/seller/dashboard" : "/seller"} className="text-sm hover:text-gray-700 text-gray-600 font-mono">
             Seller Dashboard
           </Link>
         </div>

@@ -10,6 +10,9 @@ import Footer from "./components/pages/customer/Footer";
 import Login from "./components/pages/customer/Login";
 import SignUp from "./components/pages/customer/SignUp";
 import ProtectedRoute from "./components/pages/customer/ProtectedRoute";
+import SellerLogin from "./components/pages/seller/SellerLogin";
+import SellerSignUp from "./components/pages/seller/SellerSignUp";
+import SelllerDashBoard from "./components/pages/seller/SelllerDashBoard";
 import { Toaster } from "react-hot-toast";
 
 function AppContent() {
@@ -43,6 +46,11 @@ function AppContent() {
         />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
+
+         {/* Seller route */}
+        <Route path="/seller" element={<SellerLogin />} />
+        <Route path="/seller/signup" element={<SellerSignUp />} />
+        <Route path="/seller/dashboard" element={<SelllerDashBoard />} />
       </Routes>
       {!isSellerPath && <Footer />}
     </div>
