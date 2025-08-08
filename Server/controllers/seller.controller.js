@@ -154,7 +154,7 @@ export const getProductsAdded = async (req, res) => {
     res.status(200).json({
       message: 'Products Fetched SuccessFully',
       success: true,
-      prodcuts: fetchAddedproduct
+      products: fetchAddedproduct
     })
   } catch (error) {
     console.error("Error", error.message);
