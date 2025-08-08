@@ -14,6 +14,7 @@ import SellerLogin from "./components/pages/seller/SellerLogin";
 import SellerSignUp from "./components/pages/seller/SellerSignUp";
 import SelllerDashBoard from "./components/pages/seller/SelllerDashBoard";
 import { Toaster } from "react-hot-toast";
+import SellerAllProduct from "./components/pages/seller/SellerAllProduct";
 
 function AppContent() {
   const location = useLocation();
@@ -51,6 +52,7 @@ function AppContent() {
         <Route path="/seller" element={<SellerLogin />} />
         <Route path="/seller/signup" element={<SellerSignUp />} />
         <Route path="/seller/dashboard" element={<SelllerDashBoard />} />
+        <Route path="/seller/allproduct" element={<SellerAllProduct />} />
       </Routes>
       {!isSellerPath && <Footer />}
     </div>
