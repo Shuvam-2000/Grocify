@@ -73,6 +73,8 @@ const CartPage = () => {
     }
   };
 
+  const hasOutOfStockItem = cartItems.some((item) => !item.product?.inStock);
+
   useEffect(() => {
     getCartItems();
   }, []);
@@ -115,6 +117,10 @@ const CartPage = () => {
                     <p className="text-gray-600 text-sm">
                       ₹{item.product.offerPrice} each
                     </p>
+                    <p className="text-sm font-semibold text-red-500 mt-1">
+                      {!item.product.inStock && "Out of Stock"}
+                    </p>
+
                     <p className="text-gray-400 text-sm">
                       Total: ₹{item.product.offerPrice * item.quantity}
                     </p>
@@ -160,8 +166,22 @@ const CartPage = () => {
                 </button>
 
                 <button
-                  onClick={() => toast.success("Proceeding to payment...")}
-                  className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700"
+                  onClick={() => {
+                    if (hasOutOfStockItem) {
+                      toast.error(
+                        "Remove out-of-stock items before placing order"
+                      );
+                      return;
+                    }
+                    toast.success("Proceeding to payment...");
+                  }}
+                  disabled={hasOutOfStockItem}
+                  className={`px-6 py-2 rounded-md transition 
+    ${
+      hasOutOfStockItem
+        ? "bg-gray-400 text-white opacity-50 cursor-not-allowed"
+        : "bg-green-600 text-white hover:bg-green-700"
+    }`}
                 >
                   🛍️ Place Order
                 </button>

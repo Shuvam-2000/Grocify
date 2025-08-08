@@ -117,20 +117,60 @@ const ProductDetail = () => {
           <p className="text-2xl font-bold text-red-500">
             Actual Price: ₹ {singleproduct.price}
           </p>
+          <div className="mt-2">
+            <div
+              className={`w-24 h-8 rounded-full flex items-center px-1 text-xs font-semibold
+              ${
+                singleproduct.inStock
+                  ? "bg-green-100 justify-end text-green-700"
+                  : "bg-red-100 justify-start text-red-700"
+              }`}
+            >
+              <span className="px-2">
+                {singleproduct.inStock ? "In Stock" : "Out of Stock"}
+              </span>
+            </div>
+          </div>
+
           <p className="text-2xl font-bold text-green-600">
             Offer Price: ₹ {singleproduct.offerPrice}
           </p>
 
           <div className="flex gap-4 mt-4">
             <button
-              onClick={() => addToCart(singleproduct._id, 1)}
-              className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700"
+              onClick={() => {
+                if (!singleproduct.inStock) {
+                  toast.error("Product is out of stock");
+                  return;
+                }
+                addToCart(singleproduct._id, 1);
+              }}
+              disabled={!singleproduct.inStock}
+              className={`px-6 py-2 rounded-md transition 
+              ${
+                singleproduct.inStock
+                  ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                  : "bg-gray-400 text-white opacity-50 cursor-not-allowed"
+              }`}
             >
               Add to Cart
             </button>
+
             <button
-              onClick={() => addToCart(singleproduct._id, 1)}
-              className="bg-orange-500 text-white px-6 py-2 rounded-md hover:bg-orange-600"
+              onClick={() => {
+                if (!singleproduct.inStock) {
+                  toast.error("Product is out of stock");
+                  return;
+                }
+                addToCart(singleproduct._id, 1);
+              }}
+              disabled={!singleproduct.inStock}
+              className={`px-6 py-2 rounded-md transition 
+              ${
+                singleproduct.inStock
+                  ? "bg-orange-500 text-white hover:bg-orange-600"
+                  : "bg-gray-400 text-white opacity-50 cursor-not-allowed"
+              }`}
             >
               Buy Now
             </button>
