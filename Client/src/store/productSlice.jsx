@@ -4,16 +4,16 @@ const productSlice = createSlice({
   name: "product",
   initialState: {
     allproducts: [],
-    singleproduct: null
+    singleproduct: null,
   },
   reducers: {
     setAllProducts: (state, action) => {
       state.allproducts = action.payload;
     },
     setSingleProduct: (state, action) => {
-      state.singleproduct = action.payload 
-    }
-  }
+      state.singleproduct = action.payload;
+    },
+  },
 });
 
 export const { setAllProducts, setSingleProduct } = productSlice.actions;

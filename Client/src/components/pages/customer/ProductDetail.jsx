@@ -22,7 +22,7 @@ const ProductDetail = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const product = res.data?.product?.[0];
+      const product = res.data?.product;  // backend se product object directly
 
       if (!product) {
         toast.error("Product not found");
@@ -65,7 +65,6 @@ const ProductDetail = () => {
     handleProductDetail();
   }, [dispatch, id]);
 
-  // Spinner shown while loading
   if (loading || !singleproduct) {
     return (
       <div className="flex justify-center items-center py-20">
@@ -91,7 +90,7 @@ const ProductDetail = () => {
           <div className="flex gap-2 flex-wrap">
             {singleproduct.image?.map((img, index) => (
               <img
-                key={singleproduct._id || index}
+                key={singleproduct._id + index}
                 src={img}
                 alt={`thumb-${index}`}
                 className="w-20 h-20 object-cover border cursor-pointer rounded-lg hover:scale-105 transition"

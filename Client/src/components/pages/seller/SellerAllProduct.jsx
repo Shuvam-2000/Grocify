@@ -74,8 +74,23 @@ const SellerAllProduct = () => {
     }
   };
 
-  const handleDelete = (id) => {
-    console.log("Deleted product:", id);
+  const handleDelete = async (id) => {
+    try {
+      const token = localStorage.getItem("sellertoken");
+      if (!token) return;
+      
+      await axios.delete("/api/product/delete", {
+        headers:  { Authorization: `Bearer ${token}` },
+        data: { id },
+      })
+      dispatch(setSellerProduct(sellerProduct.filter((p) => p._id !== id)));
+      fetchProductCreated();
+      toast.success("Product Deleted SuccessFully")
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Failed to update stock status"
+      );
+    }
   };
 
   return (
