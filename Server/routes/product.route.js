@@ -3,6 +3,7 @@ import {
   addNewProduct,
   changeProductInStock,
   deleteProduct,
+  fetchProductbyId,
   fetchProductList,
 } from "../controllers/product.controller.js";
 import { isSellerAuthenticated } from "../middlewares/seller.middleware.js";
@@ -19,7 +20,7 @@ router.post("/add", isSellerAuthenticated, upload, addNewProduct);
 router.get("/get-product", fetchProductList);
 
 // route for fetching product info with the id
-router.get("/get-product/:id", isUserAuthenticated, fetchProductList);
+router.get("/get-product/:id", isUserAuthenticated, fetchProductbyId);
 
 // route for updating the instock status for a product
 router.patch("/update", isSellerAuthenticated, changeProductInStock)

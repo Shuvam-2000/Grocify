@@ -7,9 +7,9 @@ import mongoose from 'mongoose';
 // add new product
 export const addNewProduct = async (req, res) => {
   try {
-    const { name, description, price, offerPrice, category } = req.body;
+    const { name, price, offerPrice, category } = req.body;
 
-    if (!name || !description || !price || !offerPrice || !category) {
+    if (!name || !price || !offerPrice || !category) {
       return res.status(400).json({
         message: "All fields are required",
         success: false,
@@ -50,7 +50,6 @@ export const addNewProduct = async (req, res) => {
 
     const productData = await Product.create({
       name,
-      description,
       price,
       offerPrice,
       category,
@@ -121,7 +120,8 @@ export const fetchProductbyId = async (req, res) => {
 
     res.status(200).json({
         message: "Product Info Found",
-        success: true
+        success: true,
+        product: productInfo
     })
   } catch (error) {
     console.error("Error", error.message);
