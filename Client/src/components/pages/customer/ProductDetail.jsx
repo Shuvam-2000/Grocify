@@ -13,6 +13,8 @@ const ProductDetail = () => {
   const { singleproduct } = useSelector((store) => store.product);
   const [mainImage, setMainImage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [recommendedProducts, setRecommendedProducts] = useState([]);
+  const [recommendationError, setRecommendationError] = useState("");
 
   const handleProductDetail = async () => {
     try {
@@ -22,7 +24,7 @@ const ProductDetail = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const product = res.data?.product;  // backend se product object directly
+      const product = res.data?.product;
 
       if (!product) {
         toast.error("Product not found");
@@ -37,6 +39,28 @@ const ProductDetail = () => {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const reommendProductByAI = async () => {
+    try {
+      setRecommendationError("");
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`/api/product/${id}/get-recommned`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // fetch the recommended prodcuts from the backend
+      const recProducts = res.data?.recommendedProducts || [];
+
+      if (recProducts.length === 0) {
+        setRecommendationError("No recommended products found.");
+      }
+      setRecommendedProducts(recProducts);
+    } catch (error) {
+      setRecommendationError(
+        error.response?.data?.message || "Failed to fetch recommended products"
+      );
     }
   };
 
@@ -63,6 +87,7 @@ const ProductDetail = () => {
 
   useEffect(() => {
     handleProductDetail();
+    reommendProductByAI();
   }, [dispatch, id]);
 
   if (loading || !singleproduct) {
@@ -178,13 +203,51 @@ const ProductDetail = () => {
       </div>
 
       {/* Recommended Products Section */}
-      <div className="mt-20">
-        <h3 className="text-2xl font-semibold mb-4">
-          Recommended Products by AI
-        </h3>
-        <div className="text-gray-600 italic">
-          Coming soon: Smart recommendations powered by AI...
+      <div className="mt-20 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-md">
+        <div className="flex items-center mb-6">
+          <h3 className="sm:text-2xl text-xl font-semibold text-indigo-700 flex items-center gap-2">
+             Recommended Products by AI
+            <span className="sm:ml-3 sm:px-2 ml-2 px-2 py-0.5 sm:text-xs
+            text-xs font-medium text-white bg-indigo-600 rounded-full select-none">
+              AI Powered
+            </span>
+          </h3>
         </div>
+
+        {recommendationError ? (
+          <div className="text-red-600 italic font-semibold">
+            {recommendationError}
+          </div>
+        ) : recommendedProducts.length === 0 ? (
+          <div className="text-gray-500 italic">
+            Loading recommended products...
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {recommendedProducts.map((product) => (
+              <div
+                key={product._id}
+                className="border rounded-lg p-6 bg-white shadow-sm hover:shadow-lg transition transform hover:scale-[1.03] cursor-pointer"
+                onClick={() =>
+                  window.location.assign(`/product/${product._id}`)
+                }
+                title={product.name}
+              >
+                <img
+                  src={product.image?.[0]}
+                  alt={product.name}
+                  className="w-full h-48 object-cover rounded-md mb-3"
+                />
+                <h4 className="font-semibold text-lg text-indigo-900 truncate">
+                  {product.name}
+                </h4>
+                <p className="text-red-600 font-bold text-xl mt-1">
+                  ₹ {product.offerPrice || product.price}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
