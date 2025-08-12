@@ -9,6 +9,7 @@ import {
 import { isSellerAuthenticated } from "../middlewares/seller.middleware.js";
 import { upload } from "../config/multer.js";
 import { isUserAuthenticated } from "../middlewares/user.middlware.js";
+import { smartAISearch, smartProductRecommendation } from "../controllers/ai.controller.js";
 
 // initlaize the router
 const router = express.Router();
@@ -27,5 +28,11 @@ router.patch("/update", isSellerAuthenticated, changeProductInStock)
 
 // delete any product by the seller
 router.delete("/delete", isSellerAuthenticated, deleteProduct);
+
+// route for ai smart search
+router.get("/search", smartAISearch);
+
+// route for ai product recommendation
+router.get("/:id/get-recommned", isUserAuthenticated, smartProductRecommendation)
 
 export default router;
