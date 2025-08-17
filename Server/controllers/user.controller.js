@@ -1,5 +1,6 @@
 import User from "../models/user.model.js";
 import Product from "../models/product.model.js";
+import Seller from "../models/seller.model.js"
 import Order from "../models/order.model.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
@@ -431,7 +432,7 @@ export const verifyPayment = async (req, res) => {
 
     const body = razorpayOrderId + '|' + razorpayPaymentId;
     const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .createHmac('sha256', process.env.RAZORPAY_API_SECRET)
       .update(body.toString())
       .digest('hex');
 
@@ -443,6 +444,7 @@ export const verifyPayment = async (req, res) => {
 
   } catch (error) {
     console.error("Verify Payment Error:", error.message);
+     console.error(error.stack);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -452,29 +454,36 @@ export const createOrder = async (req, res) => {
     const userId = req.user?.userId;
     const { razorpayOrderId, razorpayPaymentId, razorpaySignature, deliveryAddress } = req.body;
 
+    // Validate payment details
     if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature) {
       return res.status(400).json({ message: "Missing Razorpay payment details" });
     }
 
+    // Validate delivery address
     if (!deliveryAddress || Object.values(deliveryAddress).some(field => !field)) {
       return res.status(400).json({ message: "Incomplete delivery address" });
     }
 
+    // Get user with cart items populated
     const user = await User.findById(userId).populate('cartItems.product');
 
     if (!user || user.cartItems.length === 0) {
       return res.status(400).json({ message: "User not found or cart is empty" });
     }
 
+    // Prepare order items
     const orderItems = user.cartItems.map(item => ({
       product: item.product._id,
       quantity: item.quantity
     }));
 
-    const totalPrice = user.cartItems.reduce((acc, item) => {
-      return acc + item.product.offerPrice * item.quantity;
-    }, 0);
+    // Calculate total price
+    const totalPrice = user.cartItems.reduce(
+      (acc, item) => acc + item.product.offerPrice * item.quantity,
+      0
+    );
 
+    // Create new order
     const newOrder = new Order({
       user: userId,
       products: orderItems,
@@ -488,21 +497,24 @@ export const createOrder = async (req, res) => {
 
     await newOrder.save();
 
+    // Update user orders
+    const userOrders = orderItems.map(item => ({
+      product: item.product,
+      quantity: item.quantity
+    }));
+    user.orders.push(...userOrders);
+
     // Clear user's cart
     user.cartItems = [];
     await user.save();
 
-    // Add order to respective sellers
+    // Add order reference to respective sellers
     for (const item of orderItems) {
       const product = await Product.findById(item.product);
       if (product?.seller) {
         const seller = await Seller.findById(product.seller);
         if (seller) {
-          seller.orders.push({
-            order: newOrder._id,
-            product: product._id,
-            quantity: item.quantity
-          });
+          seller.orders.push(newOrder._id); // Only push order _id
           await seller.save();
         }
       }
@@ -515,6 +527,20 @@ export const createOrder = async (req, res) => {
 
   } catch (error) {
     console.error("Create Order Error:", error.message);
+    console.error(error.stack);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+// get ordered items for user
+export const getOrderedItems = async (req,res) => {
+  try {
+    
+  } catch (error) {
+      console.error("Get Order Error:", error.message);
+      return res.status(500).json({ 
+      message: "Internal Server Error",
+      success: false 
+    });
+  }
+}
