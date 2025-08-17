@@ -16,6 +16,8 @@ import SelllerDashBoard from "./components/pages/seller/SelllerDashBoard";
 import { Toaster } from "react-hot-toast";
 import SellerAllProduct from "./components/pages/seller/SellerAllProduct";
 import AddProduct from "./components/pages/seller/AddProduct";
+import Checkout from "./components/pages/customer/Checkout";
+import OrderPage from "./components/pages/customer/OrderPage";
 
 function AppContent() {
   const location = useLocation();
@@ -43,6 +45,22 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <ProductDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute>
+              <Checkout />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/orders"
+          element={
+            <ProtectedRoute>
+              <OrderPage />
             </ProtectedRoute>
           }
         />

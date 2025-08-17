@@ -64,7 +64,7 @@ const Navbar = () => {
               <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-md py-2 z-50 text-sm text-gray-700">
                 <div className="px-4 py-2 font-semibold">Hi, {user.name}</div>
                 <NavLink
-                  to="/order"
+                  to="/orders"
                   className="block px-4 py-2 hover:bg-gray-100"
                   onClick={() => setProfileDropdown(false)}
                 >

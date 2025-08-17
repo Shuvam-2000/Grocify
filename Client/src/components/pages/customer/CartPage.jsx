@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "../../../utils/axios";
 import { setCart } from "../../../store/cartSlice";
 import toast from "react-hot-toast";
@@ -10,6 +10,7 @@ const CartPage = () => {
   const dispatch = useDispatch();
   const { cartItems } = useSelector((state) => state.cart);
   const [totalPrice, setTotalPrice] = useState(0);
+  const navigate = useNavigate()
 
   const getCartItems = async () => {
     try {
@@ -174,6 +175,7 @@ const CartPage = () => {
                       return;
                     }
                     toast.success("Proceeding to payment...");
+                    navigate("/checkout")
                   }}
                   disabled={hasOutOfStockItem}
                   className={`px-6 py-2 rounded-md transition 
@@ -183,7 +185,7 @@ const CartPage = () => {
         : "bg-green-600 text-white hover:bg-green-700"
     }`}
                 >
-                  🛍️ Place Order
+                   Place Order
                 </button>
               </div>
             </div>
