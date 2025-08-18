@@ -6,6 +6,7 @@ import {
   deleteCartItems,
   getItemsInCart,
   getUserInfo,
+  getUserOrders,
   increaseItemQuantity,
   newUserRegister,
   placeOrder,
@@ -49,5 +50,8 @@ router.post('/verify-payment', isUserAuthenticated, verifyPayment);
 
 // route for saving the order to the database
 router.post('/create-order', isUserAuthenticated, createOrder);
+
+// route for fetching orders for the user
+router.get('/fetch-order', isUserAuthenticated, getUserOrders);
 
 export default router;

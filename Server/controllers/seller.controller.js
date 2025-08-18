@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { configDotenv } from "dotenv";
 import Product from "../models/product.model.js";
+import Order from "../models/order.model.js";
 
 configDotenv();
 
@@ -161,6 +162,103 @@ export const getProductsAdded = async (req, res) => {
     res.status(500).json({
       message: "Internal Server Error",
       success: false,
+    });
+  }
+};
+
+// get order info for seller
+export const getOrderInfoForSeller = async (req,res) => {
+  try {
+    // fetching sellerId from the middleware
+    const sellerId = req.user.sellerId;
+
+    if (!sellerId)
+      return res.status(400).json({
+        message: "Seller ID not Found",
+        success: false,
+      });
+
+      // fetch order info for seller
+      const seller = await Seller.findById(sellerId)
+      .populate({
+        path: "orders", // populate orders array
+        populate: {
+          path: "products.product", // populate each product inside order
+          model: "product",
+        },
+      }); 
+
+      if(!seller) return res.status(404).json({
+        message: "Seller Not Found",
+        success: false
+      })
+
+      return res.status(200).json({
+        message: "Orders Fetched Successfully",
+        success: true,
+        orders: seller.orders
+      })
+
+  } catch (error) {
+    console.error("Error", error.message);
+    res.status(500).json({
+      message: "Internal Server Error",
+      success: false,
+    });
+  }
+}
+
+// update shipping status for the order
+export const updateShippingStatus = async (req, res) => {
+  try {
+    const { id, shippingStatus } = req.body;
+    const sellerId = req.user?.sellerId; // from middleware
+
+    if (!id || !shippingStatus) {
+      return res.status(400).json({ 
+        message: "Order ID and status are required",
+        success: false
+      });
+    }
+
+    // Validate status
+    const validStatuses = ["Pending", "Shipped", "Delivered", "Cancelled"];
+    if (!validStatuses.includes(shippingStatus)) {
+      return res.status(400).json({ 
+        message: "Invalid shipping status",
+        success: false 
+      });
+    }
+
+    // Check if this seller has the product in this order
+    const order = await Order.findById(id).populate("products.product");
+    if (!order) return res.status(404).json({ 
+      message: "Order not found",
+      success: false 
+    });
+
+    const sellerHasProduct = order.products.some(p => p.product.seller.toString() === sellerId);
+    if (!sellerHasProduct) {
+      return res.status(403).json({ 
+        message: "You cannot update this order",
+        success: false 
+      });
+    }
+
+    // Update status
+    order.shippingStatus = shippingStatus;
+    await order.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Shipping status updated",
+      order
+    });
+  } catch (error) {
+    console.error("Update Shipping Status Error:", error.message);
+    return res.status(500).json({ 
+      message: "Internal Server Error",
+      success: false 
     });
   }
 };

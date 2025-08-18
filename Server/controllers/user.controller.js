@@ -533,14 +533,40 @@ export const createOrder = async (req, res) => {
 };
 
 // get ordered items for user
-export const getOrderedItems = async (req,res) => {
+export const getUserOrders = async (req, res) => {
   try {
-    
-  } catch (error) {
-      console.error("Get Order Error:", error.message);
-      return res.status(500).json({ 
-      message: "Internal Server Error",
-      success: false 
+    const userId = req.user?.userId;
+
+    // Find all orders of this user and populate products
+    const orders = await Order.find({ user: userId })
+      .populate("products.product"); // product inside Order references Product model
+
+    // Formatting for frontend 
+    const formattedOrders = orders.map(order => ({
+      orderId: order._id,
+      totalPrice: order.totalPrice,
+      paymentStatus: order.paymentStatus,
+      deliveryAddress: order.deliveryAddress,
+      shippingStatus: order.shippingStatus,
+      products: order.products.map(p => ({
+        id: p.product._id,
+        name: p.product.name,
+        price: p.product.offerPrice,
+        quantity: p.quantity,
+        image: p.product.image 
+      })),
+      createdAt: order.createdAt
+    }));
+
+    return res.status(200).json({
+      message: "Orders Fetched SuccessFully",
+      success: true, 
+      orders: formattedOrders 
     });
+
+  } catch (error) {
+    console.error("Get User Orders Error:", error.message);
+    console.error(error.stack);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
-}
+};
