@@ -19,7 +19,7 @@ const DashboardCard = () => {
         </div>
 
         {/* Orders Card */}
-        <div className="bg-white shadow-lg hover:shadow-xl transition-shadow rounded-2xl h-60 p-10 flex flex-col items-center justify-center text-center cursor-pointer">
+        <div onClick={() => navigate("/seller/getorders")} className="bg-white shadow-lg hover:shadow-xl transition-shadow rounded-2xl h-60 p-10 flex flex-col items-center justify-center text-center cursor-pointer">
           <ShoppingCart className="w-12 h-12 text-orange-600" />
           <h2 className="text-2xl font-semibold mt-6">Orders</h2>
         </div>

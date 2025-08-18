@@ -18,6 +18,7 @@ import SellerAllProduct from "./components/pages/seller/SellerAllProduct";
 import AddProduct from "./components/pages/seller/AddProduct";
 import Checkout from "./components/pages/customer/Checkout";
 import OrderPage from "./components/pages/customer/OrderPage";
+import SellerOrder from "./components/pages/seller/SellerOrder";
 
 function AppContent() {
   const location = useLocation();
@@ -73,6 +74,7 @@ function AppContent() {
         <Route path="/seller/dashboard" element={<SelllerDashBoard />} />
         <Route path="/seller/allproduct" element={<SellerAllProduct />} />
         <Route path="/seller/addproduct" element={<AddProduct />} />
+        <Route path="/seller/getorders" element={<SellerOrder />} />
       </Routes>
       {!isSellerPath && <Footer />}
     </div>
